@@ -105,63 +105,94 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.2.2/d3.min.js"></script>
 <script src="https://d3js.org/d3-transition.v1.min.js"></script>
   <script>
+    'use strict';
+
     const text = document.querySelector('.text'),
           container = document.querySelector('.visual'),
+          linewrap = document.querySelector('.line-wrap'),
           colors = ['#EA1070', '#EAC03C', '#007DB0', '#252B7F', '#FF6040', '#3abca9'],
           button = document.querySelector('.submit');
           text.value = "";
-    let valueArr, svgContainer, max, min;
-    let linewrap = document.querySelector('.line-wrap');
+    let wordArr, charArr, valueArr, svgContainer;
     const w = window.innerWidth - window.innerWidth*0.05,
           h = window.innerHeight/2;
     button.addEventListener("click", startTheShow.bind(this));
     document.addEventListener("keydown", onKeyPress.bind(this));
     text.focus();
 
-  function onKeyPress(e) {
-    if (e.keyCode === 13 && text === document.activeElement ) {
-      e.preventDefault();
-      startTheShow();
-    }
-  }
-
 
     function startTheShow() {
       if (text.value !== "") {
         clear();
-        getValue();
         init();
-        draw();
+        drawAll();
       }
     }
 
-    function getValue() {
-      valueArr = text.value.split("").map(item => item = item.charCodeAt(0));
-      max = Math.max(...valueArr);
-      min = Math.min(...valueArr);
+    function onKeyPress(e) {
+      if (e.keyCode === 13 && text === document.activeElement ) {
+        e.preventDefault();
+        startTheShow();
+      }
+    }
+
+    function clear() {
+      if (svgContainer) {
+        svgContainer.remove();
+      }
     }
 
     function init() {
+      wordArr = text.value.split(" ");
 
-      let color = colors[Math.round(Math.random() * 6 - 0.5)];
+      charArr = wordArr.map(item => {
+        return item = item.split("");
+      });
+
+      valueArr = charArr.map(item => {
+        return item = item.map(char => (char = char.charCodeAt(0)))
+      })
+
+      // console.log(wordArr, valueArr); 
 
       svgContainer = d3.select(".visual")
         .append("svg")
         .attr("class", "line-wrap")
         .attr("height", h+100)
         .attr("width", w);
-        
-      svgContainer.append("path")
-        .attr("fill", "none")
-        .attr("stroke-width", 4)
-        .attr("stroke", color);
     }
 
-    function draw() {
-      let xy = valueArr.map((item, i) => [
-        w / text.value.length * (i+0.5),
+    function newPath(index) {
+      let color = colors[Math.round(Math.random() * 6 - 0.5)];
+      let stroke = Math.round(Math.random()*10);
+      if (stroke === 0) stroke = Math.round(Math.random()*10);
+      let opacity = stroke/10;
+
+      svgContainer.append("path")
+        .attr("fill", "none")
+        .attr("stroke-width", stroke)
+        .attr("stroke", color)
+        .attr("opacity", opacity)
+        .attr("class", `path${index}`)
+        .attr("id", `path${index}`)
+    }
+
+    function drawAll() {
+      for (let i=0; i<valueArr.length; i++) {
+        newPath(i);
+        draw(i, valueArr[i]);
+      }
+    }
+
+    function draw(index, arr) {
+
+      let xy = arr.map((item, i) => [
+        w / arr.length * (i+0.5),
         item
       ]);
+
+      let max = Math.max(...arr);
+      let min = Math.min(...arr);
 
       max = d3.max(xy, function(d) {
           return d[1];
@@ -178,25 +209,15 @@
       let lineGenerator = d3.line().curve(d3.curveCardinal);
       let genData = lineGenerator(xyArr);
 
-      svgContainer.select("path")
+      let thisPath = svgContainer.select(`.path${index}`)
         .attr("d", genData)
         .attr("class", "line")
-        .transition()
-        .duration(70)
-        .attr("d", genData)
         .attr("stroke-linecap", "round")
-          
-      let line = document.querySelector('.line');
-      let lineSize = line.getTotalLength();
-      line.style.strokeDashoffset = lineSize;
-      line.style.strokeDasharray = lineSize;
-
-    }
-
-    function clear() {
-      if (svgContainer) {
-        svgContainer.remove();
-      }
+        
+      let lineSize = thisPath.node().getTotalLength().toString();
+      thisPath.style('stroke-dashoffset', lineSize);
+      thisPath.style('stroke-dasharray', lineSize);
+     
     }
 
   </script>
