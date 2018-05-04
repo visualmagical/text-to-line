@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>text to line converter</title>
+  <title>text to line transformer</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 
@@ -35,7 +35,7 @@
       color: #333;
       font-family: sans-serif;
       font-size: 22px;
-      height: 10vh;
+      height: 15vh;
       border: none;
       outline: none;
       color: #056053;
@@ -98,7 +98,7 @@
 </head>
 <body>
   <div class="text-wrap">
-  <textarea value="" maxlength="200" placeholder="your message here (max. 200 characteres)" name="text" class="text">
+  <textarea value="" maxlength="200" placeholder="your message here (max. 200 characters)" name="text" class="text">
   </textarea>
   </div>
   <button class="submit">visualize this</button>
@@ -165,12 +165,24 @@
         .attr("height", h+100)
         .attr("width", w);
     }
+    
+
+    function getValue(min, max) {
+        return Math.random() * (max - min) + min;
+      }
+
+
 
     function newPath(index) {
       let color = colors[Math.round(Math.random() * 6 - 0.5)];
-      let stroke = Math.round(Math.random()*10);
-      if (stroke === 0) stroke = Math.round(Math.random()*10);
-      let opacity = stroke/10;
+      
+
+      let stroke = getValue(1, 15);
+      let opacity = 1 - stroke/15;
+
+
+      
+
 
       svgContainer.append("path")
         .attr("fill", "none")
@@ -195,13 +207,14 @@
         item
       ]);
 
-      let max = Math.max(...arr);
-      let min = Math.min(...arr);
 
-      max = d3.max(xy, function(d) {
+      // let max = Math.max(...arr);
+      // let min = Math.min(...arr);
+
+      let max = d3.max(xy, function(d) {
           return d[1];
         });
-      min = d3.min(xy, function(d) {
+      let min = d3.min(xy, function(d) {
           return d[1];
         });
 
